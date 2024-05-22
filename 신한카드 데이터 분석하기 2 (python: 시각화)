@@ -1,0 +1,89 @@
+# 시각화에 필요한 패키지 실행하기.
+import pandas as pd
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+
+# 1) 수도권 지역의 성별 및 연령대별 소비 분야에 어떠한 차이가 있는가?
+# 저장한 결과 테이블 불러오기.
+f_max = pd.read_csv('/Users/choisubin/Desktop/SubinChoi/DA/resultTable/f_max.csv', encoding='UTF8')
+f_min = pd.read_csv('/Users/choisubin/Desktop/SubinChoi/DA/resultTable/f_min.csv', encoding='UTF8')
+m_max = pd.read_csv('/Users/choisubin/Desktop/SubinChoi/DA/resultTable/m_max.csv', encoding='UTF8')
+m_min = pd.read_csv('/Users/choisubin/Desktop/SubinChoi/DA/resultTable/m_min.csv', encoding='UTF8')
+
+# 한글 깨짐 방지를 위해 'AppleGothic' 지정해주기.
+plt.rcParams['font.family'] = 'AppleGothic'
+matplotlib.rcParams['axes.unicode_minus'] = False
+
+
+# 데이터 시각화: 이중 막대 그래프 그리기. (남녀 테이블 같이) (Bar Chart)
+# 그래프 사이즈, 바 굵기 조정하기.
+fig, ax = plt.subplots(figsize=(12, 6))
+bar_width = 0.25
+# 연령대가 10대에서 60대까지이므로 6으로 지정해주기.
+index = np.arange(6)
+# 사용하고자 하는 테이블 삽입하기.
+# alpha는 투명도, label은 범례를 의미하며, color에는 원하는 색상 코드를 삽입하면 됨.
+mMax = plt.bar(index, m_max['카드이용건수 합계'], bar_width, alpha=0.7, color='#14213d', label = '남')
+fMax = plt.bar(index+bar_width, f_max['카드이용건수 합계'], bar_width, alpha=0.7, color='#fca311', label = '여')
+# x축 위치를 정 가운데로 조정하고 x축의 텍스트를 연령대 정보와 매칭하기.
+plt.xticks(np.arange(bar_width, 6 + bar_width, 1), f_min['연령대별(AGE_GB)'])
+
+# 막대 위에 업종(텍스트) 표시하기. (연령별로 1씩 차이가 나고, 성별은 0.25씩 차이가 남)
+# for문 사용하기.
+# 여성 이용자
+fMaxUpjong = f_max['내국인업종분류(SB_UPJONG_NM)']
+for i in range(len(fMaxUpjong)):
+    x = i + 0.25
+    y = f_max['카드이용건수 합계'][i] + 100
+    plt.text(x, y, fMaxUpjong[i],
+             fontsize=10,
+             horizontalalignment='center',
+             verticalalignment='bottom')
+# 남성 이용자
+mMaxUpjong = m_max['내국인업종분류(SB_UPJONG_NM)']
+for i in range(len(mMaxUpjong)):
+    x = i + 0
+    y = m_max['카드이용건수 합계'][i] + 100
+    plt.text(x, y, mMaxUpjong[i],
+             fontsize=10,
+             horizontalalignment='center',
+             verticalalignment='bottom')
+
+# x축, y축 이름과 그래프 제목 설정하기.
+plt.xlabel('연령대별', size=13)
+plt.ylabel('카드이용건수 합계', size=13)
+plt.legend()
+plt.title('남녀 이용자의 연령별 카드이용건수가 가장 높은 분야', size=18)
+plt.show()
+
+
+# 2-1) 연도별 외식 소비 경향 (Line Chart)
+# 그래프 크기 지정하기.
+plt.figure(figsize=(10,6))
+# x,y축 데이터 입력, marker를 통해 마커 모양 지정하기.
+plt.plot(year['연도'], year['카드이용건수 합계'], color='#083d77', marker='o')
+# x,y축 라벨 입력하기.
+plt.xlabel('연도별')
+plt.ylabel('카드이용건수 합계')
+# x,y축 범위 지정하기.
+plt.xlim([2016, 2022])
+plt.ylim([1000000, 4000000])
+# 그래프 그리드 설정하기.
+plt.grid(color='0.8')
+# 지수 표현 형식(scientific notation) 제거 및 천단위 콤마 찍기.
+current_values = plt.gca().get_yticks()
+plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
+# 그래프 제목 설정하기.
+plt.title('연도별 외식 소비 경향', fontsize=15)
+plt.show()
+
+# 파이 차트도 만들어보기. (연도별 외식 소비 경향) (Pie Chart)
+myColors = ['#e76f51', '#f4a261', '#e9c46a', '#2a9d8f', '#264653']
+explodes = [0, 0, 0, 0.05, 0]
+# statangle = 시작 각도 설정, counterclock = 시계 방향으로 설정
+# explode = 특정값이 중심에서 벗어나는 정도 설정, autopct = 그래프에 표시될 숫자 형식 지정
+plt.pie(year['카드이용건수 합계'], labels=year['연도'], autopct='%.1f%%',
+        explode=explodes, startangle=90, counterclock=False, colors=myColors)
+plt.title('연도별 외식 소비 경향', fontsize=12)
+plt.show()
