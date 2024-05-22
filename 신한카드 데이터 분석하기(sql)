@@ -1,0 +1,264 @@
+# 데이터 출처 - 서울시 빅데이터 캠퍼스 (https://bigdata.seoul.go.kr/main.do)
+
+# DB 생성하기.
+SHOW DATABASES;
+CREATE DATABASE shinhanCardSalesDB;
+USE shinhanCardSalesDB;
+
+
+# 아래와 같은 방식으로 테이블 생성하기.
+DROP TABLE salesByTime_in;                         # 기존의 테이블과 중복 방지를 위해 삭제하기.
+CREATE TABLE salesByTime_in(                       # 각 컬럼의 종류에 따라 테이블 생성
+    num INT NOT NULL AUTO_INCREMENT,
+    block_code INT(10) NOT NULL,
+    business_code VARCHAR(10) NOT NULL,
+    timestamp_ym INT(20) NOT NULL,
+    timestamp_ymd INT(20) NOT NULL,
+    day VARCHAR(10) NOT NULL,
+    time INT(10) NOT NULL,
+    amount_of_use DECIMAL(20) NOT NULL,
+    number_of_use DECIMAL(20) NOT NULL,
+    PRIMARY KEY (num)
+);
+SELECT * FROM salesByTime_in;                      # 생성된 테이블에 데이터가 잘 들어갔는지 조회하기.
+
+
+# 데이터 정제 - null값 제거하기.
+# 'DELETE FROM 'table name' WHERE 'column name' IS NULL;' 형식으로 특정 데이터 삭제하기.
+DELETE FROM salesBySexAge_in WHERE `성별(SEX_CCD)` IS NULL;
+DELETE FROM salesBySexAge_in WHERE `연령대별(AGE_GB)` IS NULL;
+DELETE FROM salesByAddress_in WHERE `고객주소시군구(SGG)` IS NULL;
+
+# 데이터 변환 - 주소지 형식 통일하기.
+# 'UPDATE 'table name' SET '반환값' WHERE '조건';' 형식으로 특정 데이터 변경하기.
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '서울' WHERE `고객주소광역시(SIDO)` = '서울특별시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '강원' WHERE `고객주소광역시(SIDO)` = '강원도';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소광역시(SIDO)` = '경기도';
+UPDATE salesByAddress_in SET `고객주소시군구(SGG)` = '강동구' WHERE `고객주소시군구(SGG)` = '강동구서울';
+
+# 데이터 변환 - 날짜 포맷 변경하기.
+# UPDATE 'table name' SET 'column name' = DATE_FORMAT('column name', '%Y-%m-%d'); 형식으로 변경.
+UPDATE salesByTime_in SET `일별(TS_YMD)` = DATE_FORMAT(`일별(TS_YMD)`, '%Y-%m-%d');
+UPDATE salesByTime_out SET `일별(TS_YMD)` = DATE_FORMAT(`일별(TS_YMD)`, '%Y-%m-%d');
+UPDATE salesBySexAge_in SET `일별(TS_YMD)` = DATE_FORMAT(`일별(TS_YMD)`, '%Y-%m-%d');
+UPDATE salesByAddress_in SET `일별(TS_YMD)` = DATE_FORMAT(`일별(TS_YMD)`, '%Y-%m-%d');
+UPDATE salesByCountry_out SET `일별(TS_YMD)` = DATE_FORMAT(`일별(TS_YMD)`, '%Y-%m-%d');
+
+# 데이터 그룹화 - 요일별 카드이용건수 조회하기.
+SELECT SUM(`카드이용건수(USECT_CORR)`) AS '카드이용건수', `요일(DAW)`
+FROM salesByTime_in
+GROUP BY `요일(DAW)`
+ORDER BY SUM(`카드이용건수(USECT_CORR)`) DESC;
+
+# 데이터 그룹화 - 요일별 카드이용금액 조회하기.
+SELECT SUM(`카드이용금액계(AMT_CORR)`) AS '카드이용액', `요일(DAW)`
+FROM salesByTime_in
+GROUP BY `요일(DAW)`
+ORDER BY SUM(`카드이용금액계(AMT_CORR)`) DESC;
+
+# 서울로 표기되어 있는 지역들을 경기로 수정하기.
+# 'UPDATE 'table name' SET '반환값' WHERE '조건';' 형식으로 특정 데이터 변경하기.
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '김포시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '포천시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '고양시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '시흥시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '하남시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '성남시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '남양주시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '의정부시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '용인시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '안산시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '구리시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '부천시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '수원시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '광명시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '화성시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '광주시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '평택시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '안양시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '군포시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '의왕시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '과천시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '이천시';
+UPDATE salesByAddress_in SET `고객주소광역시(SIDO)` = '경기' WHERE `고객주소시군구(SGG)` = '오산시';
+
+
+# 데이터 조회하기.
+# 서울 지역구별 카드 이용분야, 카드 이용금액 및 이용건수 합계
+SELECT A.`고객주소시군구(SGG)`,
+       T.`내국인업종분류(SB_UPJONG_NM)`,
+       SUM(`카드이용금액계(AMT_CORR)`) AS '카드이용액',
+       SUM(`카드이용건수(USECT_CORR)`) AS '카드이용건수'
+FROM salesByAddress_in AS A
+JOIN typeOfBusiness_in AS T ON A.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+WHERE A.`고객주소광역시(SIDO)` = '서울'
+GROUP BY A.`고객주소시군구(SGG)`, T.`내국인업종분류(SB_UPJONG_NM)`
+ORDER BY A.`고객주소시군구(SGG)`, SUM(`카드이용금액계(AMT_CORR)`) DESC, SUM(`카드이용건수(USECT_CORR)`) DESC;
+
+# 성별, 연령대별 카드 이용분야, 카드 이용건수 및 이용금액 합계
+SELECT SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`, T.`내국인업종분류(SB_UPJONG_NM)`,
+       SUM(`카드이용건수(USECT_CORR)`) AS '카드이용건수', SUM(`카드이용금액계(AMT_CORR)`) AS '카드이용액'
+FROM salesBySexAge_in AS SA
+JOIN typeOfBusiness_in AS T ON SA.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+GROUP BY SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`, T.`내국인업종분류(SB_UPJONG_NM)`
+ORDER BY SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`, T.`내국인업종분류(SB_UPJONG_NM)`;
+
+# 요일별, 연도별 카드 이용분야, 카드 이용건수 및 이용금액 합계
+SELECT YEAR(T.`일별(TS_YMD)`) AS '연도', B.`내국인업종분류(SB_UPJONG_NM)`,
+       SUM(`카드이용건수(USECT_CORR)`) AS '카드이용건수', SUM(`카드이용금액계(AMT_CORR)`) AS '카드이용액'
+FROM salesByTime_in AS T
+JOIN typeOfBusiness_in AS B ON T.`내국인업종코드(SB_UPJONG_CD)` = B.`내국인업종코드(SB_UPJONG_CD)`
+GROUP BY YEAR(T.`일별(TS_YMD)`), B.`내국인업종분류(SB_UPJONG_NM)`
+ORDER BY YEAR(T.`일별(TS_YMD)`), SUM(`카드이용건수(USECT_CORR)`) DESC;
+
+
+# 질문에 대한 답 찾기.
+# 1) 수도권 지역의 성별 및 연령대별 소비 분야에 어떠한 차이가 있는가? (union 사용)
+# 10대 이용자
+(SELECT SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`,T.`내국인업종분류(SB_UPJONG_NM)`,
+       ROUND(SUM(SA.`카드이용건수(USECT_CORR)`), 0) AS '카드이용건수 합계',
+       ROUND(SUM(SA.`카드이용금액계(AMT_CORR)`), 0) AS '카드이용금액 합계'
+FROM salesBySexAge_in AS SA
+JOIN typeOfBusiness_in AS T ON SA.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesByAddress_in AS A ON A.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+# 개인/법인 구분, 지역 한정, 조회하고자 하는 성별과 연령대 입력.
+WHERE `개인법인구분(PSN_CPR)` = '개인' AND A.`고객주소광역시(SIDO)` = ('서울' OR '경기')
+  AND `성별(SEX_CCD)` = 'M' AND `연령대별(AGE_GB)` = '10대'
+GROUP BY T.`내국인업종분류(SB_UPJONG_NM)`, SA.`카드이용건수(USECT_CORR)`, SA.`카드이용금액계(AMT_CORR)`
+# 이용건수 or 이용금액 입력. 최댓값은 DESC 최솟값은 ASC 입력.
+ORDER BY SUM(SA.`카드이용건수(USECT_CORR)`) ASC
+LIMIT 1)
+UNION
+# 20대 이용자
+(SELECT SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`, T.`내국인업종분류(SB_UPJONG_NM)`,
+       ROUND(SUM(SA.`카드이용건수(USECT_CORR)`), 0) AS '카드이용건수 합계',
+       ROUND(SUM(SA.`카드이용금액계(AMT_CORR)`), 0) AS '카드이용금액 합계'
+FROM salesBySexAge_in AS SA
+JOIN typeOfBusiness_in AS T ON SA.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesByAddress_in AS A ON A.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+WHERE `개인법인구분(PSN_CPR)` = '개인' AND A.`고객주소광역시(SIDO)` = ('서울' OR '경기')
+  AND `성별(SEX_CCD)` = 'M' AND `연령대별(AGE_GB)` = '20대'
+GROUP BY T.`내국인업종분류(SB_UPJONG_NM)`, SA.`카드이용건수(USECT_CORR)`, SA.`카드이용금액계(AMT_CORR)`
+ORDER BY SUM(SA.`카드이용건수(USECT_CORR)`) ASC
+LIMIT 1)
+UNION 
+# 30대 이용자
+(SELECT SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`, T.`내국인업종분류(SB_UPJONG_NM)`,
+       ROUND(SUM(SA.`카드이용건수(USECT_CORR)`), 0) AS '카드이용건수 합계',
+       ROUND(SUM(SA.`카드이용금액계(AMT_CORR)`), 0) AS '카드이용금액 합계'
+FROM salesBySexAge_in AS SA
+JOIN typeOfBusiness_in AS T ON SA.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesByAddress_in AS A ON A.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+WHERE `개인법인구분(PSN_CPR)` = '개인' AND A.`고객주소광역시(SIDO)` = ('서울' OR '경기')
+  AND `성별(SEX_CCD)` = 'M' AND `연령대별(AGE_GB)` = '30대'
+GROUP BY T.`내국인업종분류(SB_UPJONG_NM)`, SA.`카드이용건수(USECT_CORR)`, SA.`카드이용금액계(AMT_CORR)`
+ORDER BY SUM(SA.`카드이용건수(USECT_CORR)`) ASC
+LIMIT 1)
+UNION ALL
+# 40대 이용자
+(SELECT SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`, T.`내국인업종분류(SB_UPJONG_NM)`,
+       ROUND(SUM(SA.`카드이용건수(USECT_CORR)`), 0) AS '카드이용건수 합계',
+       ROUND(SUM(SA.`카드이용금액계(AMT_CORR)`), 0) AS '카드이용금액 합계'
+FROM salesBySexAge_in AS SA
+JOIN typeOfBusiness_in AS T ON SA.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesByAddress_in AS A ON A.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+WHERE `개인법인구분(PSN_CPR)` = '개인' AND A.`고객주소광역시(SIDO)` = ('서울' OR '경기')
+  AND `성별(SEX_CCD)` = 'M' AND `연령대별(AGE_GB)` = '40대'
+GROUP BY T.`내국인업종분류(SB_UPJONG_NM)`, SA.`카드이용건수(USECT_CORR)`, SA.`카드이용금액계(AMT_CORR)`
+ORDER BY SUM(SA.`카드이용건수(USECT_CORR)`) ASC
+LIMIT 1)
+UNION 
+# 50대 이용자
+(SELECT SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`, T.`내국인업종분류(SB_UPJONG_NM)`,
+       ROUND(SUM(SA.`카드이용건수(USECT_CORR)`), 0) AS '카드이용건수 합계',
+       ROUND(SUM(SA.`카드이용금액계(AMT_CORR)`), 0) AS '카드이용금액 합계'
+FROM salesBySexAge_in AS SA
+JOIN typeOfBusiness_in AS T ON SA.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesByAddress_in AS A ON A.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+WHERE `개인법인구분(PSN_CPR)` = '개인' AND A.`고객주소광역시(SIDO)` = ('서울' OR '경기')
+  AND `성별(SEX_CCD)` = 'M' AND `연령대별(AGE_GB)` = '50대'
+GROUP BY T.`내국인업종분류(SB_UPJONG_NM)`, SA.`카드이용건수(USECT_CORR)`, SA.`카드이용금액계(AMT_CORR)`
+ORDER BY SUM(SA.`카드이용건수(USECT_CORR)`) ASC
+LIMIT 1)
+UNION 
+# 60대 이용자
+(SELECT SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`, T.`내국인업종분류(SB_UPJONG_NM)`,
+       ROUND(SUM(SA.`카드이용건수(USECT_CORR)`), 0) AS '카드이용건수 합계',
+       ROUND(SUM(SA.`카드이용금액계(AMT_CORR)`), 0) AS '카드이용금액 합계'
+FROM salesBySexAge_in AS SA
+JOIN typeOfBusiness_in AS T ON SA.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesByAddress_in AS A ON A.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+WHERE `개인법인구분(PSN_CPR)` = '개인' AND A.`고객주소광역시(SIDO)` = ('서울' OR '경기')
+  AND `성별(SEX_CCD)` = 'M' AND `연령대별(AGE_GB)` = '60대'
+GROUP BY T.`내국인업종분류(SB_UPJONG_NM)`, SA.`카드이용건수(USECT_CORR)`, SA.`카드이용금액계(AMT_CORR)`
+ORDER BY SUM(SA.`카드이용건수(USECT_CORR)`) ASC
+LIMIT 1)
+UNION 
+# 70대 이상 이용자
+(SELECT SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`, T.`내국인업종분류(SB_UPJONG_NM)`,
+       ROUND(SUM(SA.`카드이용건수(USECT_CORR)`), 0) AS '카드이용건수 합계',
+       ROUND(SUM(SA.`카드이용금액계(AMT_CORR)`), 0) AS '카드이용금액 합계'
+FROM salesBySexAge_in AS SA
+JOIN typeOfBusiness_in AS T ON SA.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesByAddress_in AS A ON A.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+WHERE `개인법인구분(PSN_CPR)` = '개인' AND A.`고객주소광역시(SIDO)` = ('서울' OR '경기')
+  AND `성별(SEX_CCD)` = 'M' AND `연령대별(AGE_GB)` = '70대 이상'
+GROUP BY T.`내국인업종분류(SB_UPJONG_NM)`, SA.`카드이용건수(USECT_CORR)`, SA.`카드이용금액계(AMT_CORR)`
+ORDER BY SUM(SA.`카드이용건수(USECT_CORR)`) ASC
+LIMIT 1);
+
+# 2) 수도권 지역의 연도별 및 요일별 외식 소비에 어떠한 차이가 있는가?
+# 연도별 외식분야 카드이용건수 및 카드이용금액 합계
+SELECT YEAR(T.`일별(TS_YMD)`) AS '연도', -- T.`요일(DAW)`, B.`내국인업종분류(SB_UPJONG_NM)`,
+       CONCAT(ROUND(SUM(T.`카드이용건수(USECT_CORR)`), 0), '건') AS '카드이용건수 합계',
+       CONCAT(ROUND(SUM(T.`카드이용금액계(AMT_CORR)`), 0), '원') AS '카드이용금액 합계'
+FROM salesByTime_in AS T
+JOIN typeOfBusiness_in AS B ON T.`내국인업종코드(SB_UPJONG_CD)` = B.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesBySexAge_in AS SA ON SA.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesByAddress_in AS A ON A.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+WHERE SA.`개인법인구분(PSN_CPR)` = '개인' AND A.`고객주소광역시(SIDO)` = ('서울' OR '경기')
+      AND B.`중분류(SB_M_UPJONG_NM)` = ('한식' OR '일식/중식/양식')
+GROUP BY YEAR(T.`일별(TS_YMD)`)
+ORDER BY YEAR(T.`일별(TS_YMD)`);
+
+# 요일별 외식분야 카드이용건수 및 카드이용금액 합계.
+SELECT T.`요일(DAW)`,
+       CONCAT(ROUND(SUM(T.`카드이용건수(USECT_CORR)`), 0), '건') AS '카드이용건수 합계',
+       CONCAT(ROUND(SUM(T.`카드이용금액계(AMT_CORR)`), 0), '원') AS '카드이용금액 합계'
+FROM salesByTime_in AS T
+JOIN typeOfBusiness_in AS B ON T.`내국인업종코드(SB_UPJONG_CD)` = B.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesBySexAge_in AS SA ON SA.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesByAddress_in AS A ON A.`내국인업종코드(SB_UPJONG_CD)` = T.`내국인업종코드(SB_UPJONG_CD)`
+WHERE SA.`개인법인구분(PSN_CPR)` = '개인' AND A.`고객주소광역시(SIDO)` = ('서울' OR '경기')
+      AND B.`중분류(SB_M_UPJONG_NM)` = ('한식' OR '일식/중식/양식')
+GROUP BY T.`요일(DAW)`
+# 월~일 순서로 정렬.
+ORDER BY CASE
+    WHEN T.`요일(DAW)`='월요일' THEN 1
+    WHEN T.`요일(DAW)`='화요일' THEN 2
+    WHEN T.`요일(DAW)`='수요일' THEN 3
+    WHEN T.`요일(DAW)`='목요일' THEN 4
+    WHEN T.`요일(DAW)`='금요일' THEN 5
+    WHEN T.`요일(DAW)`='토요일' THEN 6
+    WHEN T.`요일(DAW)`='일요일' THEN 7
+    END ASC;
+
+# 3)수도권 지역의 MZ세대의 과시소비(백화점,골프,호텔)경향 확인해보기.
+# 과시소비 항목:백화점,호텔/콘도,실외골프/스키,실내골프/헬스,면세점,의복/의류,시계/귀금속,패션/잡화
+SELECT YEAR(SA.`일별(TS_YMD)`) AS '연도별', SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`,
+       MAX(SA.`카드이용건수(USECT_CORR)`) AS '카드이용건수', B.`내국인업종분류(SB_UPJONG_NM)`
+FROM salesBySexAge_in AS SA
+JOIN typeOfBusiness_in AS B ON SA.`내국인업종코드(SB_UPJONG_CD)` = B.`내국인업종코드(SB_UPJONG_CD)`
+JOIN salesByAddress_in AS A ON SA.`내국인업종코드(SB_UPJONG_CD)` = A.`내국인업종코드(SB_UPJONG_CD)`
+WHERE B.`내국인업종분류(SB_UPJONG_NM)` = '백화점' OR
+      B.`내국인업종분류(SB_UPJONG_NM)` = '면세점' OR
+      B.`내국인업종분류(SB_UPJONG_NM)` = '호텔/콘도' OR
+      B.`내국인업종분류(SB_UPJONG_NM)` = '의복/의류' OR
+      B.`내국인업종분류(SB_UPJONG_NM)` = '실외골프/스키' OR
+      B.`내국인업종분류(SB_UPJONG_NM)` = '실내골프/헬스' OR
+      B.`내국인업종분류(SB_UPJONG_NM)` = '시계/귀금속' OR
+      B.`내국인업종분류(SB_UPJONG_NM)` = '패션/잡화'
+      AND SA.`개인법인구분(PSN_CPR)` = '개인' AND A.`고객주소광역시(SIDO)` = ('서울' OR '경기')
+GROUP BY YEAR(SA.`일별(TS_YMD)`), SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`,
+			B.`내국인업종분류(SB_UPJONG_NM)`
+ORDER BY YEAR(SA.`일별(TS_YMD)`), SA.`성별(SEX_CCD)`, SA.`연령대별(AGE_GB)`;
